@@ -149,7 +149,7 @@ class MqttClient:
             "name": "KACO blueplanet 15.0 TL3 M2",
             "manufacturer": "KACO new energy",
             "model": "blueplanet 15.0 TL3 M2",
-            "sw_version": "KACO MQTT Gateway",
+            "sw_version": "KACO MQTT Gateway 1.0",
         }
 
         availability = {
