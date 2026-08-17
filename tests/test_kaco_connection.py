@@ -1,23 +1,16 @@
 from src.kaco_modbus import KacoModbusClient
 
 
-import os
+from src.config import KacoConfig
 
-HOST = os.getenv("KACO_HOST")
-PORT = int(os.getenv("KACO_PORT", "502"))
-UNIT_ID = int(os.getenv("KACO_UNIT_ID", "3"))
-
-if not HOST:
-    raise RuntimeError(
-    "KACO_HOST is not set. "
-    "Set the KACO_HOST environment variable before running the test."
-)
+config = KacoConfig.from_environment()
 
 
 client = KacoModbusClient(
-    host=HOST,
-    port=PORT,
-    unit_id=UNIT_ID,
+    host=config.host,
+    port=config.port,
+    unit_id=config.unit_id,
+    timeout=config.timeout,
 )
 
 try:
