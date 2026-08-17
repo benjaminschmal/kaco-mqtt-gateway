@@ -11,9 +11,14 @@ class MqttConfig:
 
     @classmethod
     def from_environment(cls) -> "MqttConfig":
-        host = os.getenv("MQTT_HOST", "MQTT_HOST")
+        host = os.getenv("MQTT_HOST")
         username = os.getenv("MQTT_USERNAME", "mqtt")
         password = os.getenv("MQTT_PASSWORD")
+
+        if not host:
+            raise ValueError(
+                "MQTT_HOST environment variable is required."
+            )
 
         if not password:
             raise ValueError(
