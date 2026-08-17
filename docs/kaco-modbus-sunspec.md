@@ -76,6 +76,29 @@ These values must be interpreted together with the corresponding SunSpec
 data type and scale factor. They must not automatically be treated as
 normal measurement values.
 
+
+## Implementation
+
+The current implementation provides:
+
+- Modbus TCP communication using PyModbus
+- SunSpec Model 103 decoding
+- Register scaling factor handling
+- AC, DC, energy and status data
+- Environment-based connection configuration
+- Logging and basic error handling
+
+The decoder can be tested independently from the inverter using a stored
+52-register test fixture.
+
+## Tests
+
+The decoder is covered by offline pytest tests using a verified register
+snapshot from the KACO inverter.
+
+The live Modbus connection has also been tested successfully with the
+KACO blueplanet 15.0 TL3 M2.
+
 ## Notes
 
 Register interpretation is based on tests with the KACO blueplanet 15.0 TL3 M2
