@@ -1,5 +1,7 @@
 # KACO MQTT Gateway
 
+[![Tests](https://github.com/benjaminschmal/kaco-mqtt-gateway/actions/workflows/tests.yml/badge.svg)](https://github.com/benjaminschmal/kaco-mqtt-gateway/actions/workflows/tests.yml)
+
 MQTT gateway for KACO blueplanet photovoltaic inverters.
 
 The gateway reads inverter data via **Modbus TCP / SunSpec** and will publish
