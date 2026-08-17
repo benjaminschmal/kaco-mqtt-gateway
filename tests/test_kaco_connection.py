@@ -1,5 +1,11 @@
 from src.kaco_modbus import KacoModbusClient
 
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+)
 
 from src.config import KacoConfig
 

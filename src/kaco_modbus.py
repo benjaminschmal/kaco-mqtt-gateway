@@ -1,8 +1,10 @@
 from dataclasses import dataclass
 from typing import Optional
+import logging
 
 from pymodbus.client import ModbusTcpClient
 
+logger = logging.getLogger(__name__)
 
 @dataclass
 class InverterData:
@@ -70,10 +72,29 @@ class KacoModbusClient:
         )
 
     def connect(self) -> bool:
-        return self.client.connect()
+        logger.info(
+            "Connecting to KACO inverter %s:%s (unit %s)",
+            self.host,
+            self.port,
+            self.unit_id,
+        )
+
+        connected = self.client.connect()
+
+        if connected:
+            logger.info("Connected to KACO inverter")
+        else:
+            logger.error(
+                "Could not connect to KACO inverter %s:%s",
+                self.host,
+                self.port,
+            )
+
+        return connected
 
     def close(self) -> None:
         self.client.close()
+        logger.debug("KACO Modbus connection closed")
 
     def _read_model_103(self) -> list[int]:
         # PyModbus uses zero-based addresses.
@@ -85,6 +106,7 @@ class KacoModbusClient:
         )
 
         if response.isError():
+            logger.error("Modbus read failed: %s", response)
             raise RuntimeError(f"Modbus read failed: {response}")
 
         return response.registers
