@@ -2,9 +2,8 @@
 
 MQTT gateway for KACO blueplanet photovoltaic inverters.
 
-The gateway reads inverter data via **Modbus TCP / SunSpec** and publishes
-the available values via **MQTT**. MQTT Discovery is planned for integration
-with Home Assistant.
+The gateway reads inverter data via **Modbus TCP / SunSpec** and will publish
+the available values via **MQTT** for integration with Home Assistant.
 
 ## Supported inverter
 
@@ -13,22 +12,41 @@ with Home Assistant.
 - Modbus TCP
 - SunSpec Model 103
 
-## Planned features
+## Current status
 
-- Read inverter data via Modbus TCP
-- Decode SunSpec registers and scaling factors
-- Publish values via MQTT
+The following parts are implemented and tested:
+
+- Modbus TCP connection
+- SunSpec Model 103 register decoding
+- Scaling factor handling
+- AC, DC, energy and status values
+- Environment-based configuration
+- Logging and connection error handling
+- Offline decoder tests with pytest
+
+The implementation has been tested against a real KACO blueplanet 15.0 TL3 M2.
+
+## Planned
+
+- MQTT publishing
 - MQTT Discovery
 - Home Assistant integration
 - Docker deployment
 
-## Project status
+## Configuration
 
-Early development.
+The inverter connection is configured via environment variables:
 
-The Modbus TCP connection and SunSpec Model 103 communication have been
-successfully tested with a KACO blueplanet 15.0 TL3 M2.
+- `KACO_HOST`
+- `KACO_PORT`
+- `KACO_UNIT_ID`
+- `KACO_TIMEOUT`
 
-## Documentation
+The actual network address is not stored in the repository.
 
-- [KACO Modbus / SunSpec](docs/kaco-modbus-sunspec.md)
+## Tests
+
+Run the offline decoder tests with:
+
+```bash
+python -m pytest tests/test_kaco_decoder.py -v
