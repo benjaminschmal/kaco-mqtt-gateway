@@ -1,10 +1,16 @@
 import logging
+import threading
 import time
 
 from src.config import KacoConfig
 from src.kaco_modbus import KacoModbusClient
 from src.mqtt import MqttClient
 from src.mqtt_config import MqttConfig
+from src.web import (
+    run_web_server,
+    update_connection_status,
+    update_state,
+)
 
 
 logging.basicConfig(
@@ -35,6 +41,12 @@ def main() -> None:
         password=mqtt_config.password,
     )
 
+    web_thread = threading.Thread(
+        target=run_web_server,
+        daemon=True,
+    )
+    web_thread.start()
+
     try:
         if not mqtt.connect():
             raise RuntimeError(
@@ -50,19 +62,37 @@ def main() -> None:
 
         mqtt.publish_status("online")
 
+        update_connection_status(
+            kaco_connected=False,
+            mqtt_connected=True,
+        )
+
         while True:
             try:
                 if not kaco.connect():
                     logger.error(
                         "Could not connect to KACO inverter"
                     )
+
                     mqtt.publish_status("offline")
+
+                    update_connection_status(
+                        kaco_connected=False,
+                        mqtt_connected=mqtt.connected,
+                    )
+
                     time.sleep(poll_interval)
                     continue
 
                 data = kaco.read_data()
 
                 mqtt.publish_inverter_data(data)
+
+                update_state(
+                    data=data,
+                    kaco_connected=True,
+                    mqtt_connected=mqtt.connected,
+                )
 
                 logger.info(
                     "KACO data: %.0f W AC / %.0f W DC",
@@ -77,6 +107,11 @@ def main() -> None:
 
                 mqtt.publish_status("offline")
 
+                update_connection_status(
+                    kaco_connected=False,
+                    mqtt_connected=mqtt.connected,
+                )
+
             finally:
                 kaco.close()
 
@@ -87,6 +122,12 @@ def main() -> None:
 
     finally:
         mqtt.publish_status("offline")
+
+        update_connection_status(
+            kaco_connected=False,
+            mqtt_connected=False,
+        )
+
         mqtt.disconnect()
 
 
