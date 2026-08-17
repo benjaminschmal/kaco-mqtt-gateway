@@ -56,6 +56,8 @@ class MqttClient:
                 self.port,
             )
 
+            self.publish_discovery()
+
         else:
             self.connected = False
 
@@ -139,6 +141,165 @@ class MqttClient:
             )
 
             return False
+
+    def publish_discovery(self) -> None:
+        """Publish Home Assistant MQTT Discovery configuration."""
+        device = {
+            "identifiers": ["kaco_mqtt_gateway"],
+            "name": "KACO blueplanet 15.0 TL3 M2",
+            "manufacturer": "KACO new energy",
+            "model": "blueplanet 15.0 TL3 M2",
+            "sw_version": "KACO MQTT Gateway",
+        }
+
+        availability = {
+            "topic": "kaco/inverter/status",
+            "payload_available": "online",
+            "payload_not_available": "offline",
+        }
+
+        sensors = [
+            {
+                "object_id": "kaco_ac_power",
+                "name": "AC Power",
+                "value_template": "{{ value_json.ac_power_w }}",
+                "unit_of_measurement": "W",
+                "device_class": "power",
+                "state_class": "measurement",
+            },
+            {
+                "object_id": "kaco_dc_power",
+                "name": "DC Power",
+                "value_template": "{{ value_json.dc_power_w }}",
+                "unit_of_measurement": "W",
+                "device_class": "power",
+                "state_class": "measurement",
+            },
+            {
+                "object_id": "kaco_ac_current",
+                "name": "AC Current",
+                "value_template": "{{ value_json.ac_current_a }}",
+                "unit_of_measurement": "A",
+                "device_class": "current",
+                "state_class": "measurement",
+            },
+            {
+                "object_id": "kaco_dc_voltage",
+                "name": "DC Voltage",
+                "value_template": "{{ value_json.dc_voltage_v }}",
+                "unit_of_measurement": "V",
+                "device_class": "voltage",
+                "state_class": "measurement",
+            },
+            {
+                "object_id": "kaco_l1_voltage",
+                "name": "L1 Voltage",
+                "value_template": "{{ value_json.voltage_l1_v }}",
+                "unit_of_measurement": "V",
+                "device_class": "voltage",
+                "state_class": "measurement",
+            },
+            {
+                "object_id": "kaco_l2_voltage",
+                "name": "L2 Voltage",
+                "value_template": "{{ value_json.voltage_l2_v }}",
+                "unit_of_measurement": "V",
+                "device_class": "voltage",
+                "state_class": "measurement",
+            },
+            {
+                "object_id": "kaco_l3_voltage",
+                "name": "L3 Voltage",
+                "value_template": "{{ value_json.voltage_l3_v }}",
+                "unit_of_measurement": "V",
+                "device_class": "voltage",
+                "state_class": "measurement",
+            },
+            {
+                "object_id": "kaco_frequency",
+                "name": "Frequency",
+                "value_template": "{{ value_json.frequency_hz }}",
+                "unit_of_measurement": "Hz",
+                "state_class": "measurement",
+            },
+            {
+                "object_id": "kaco_power_factor",
+                "name": "Power Factor",
+                "value_template": "{{ value_json.power_factor }}",
+                "state_class": "measurement",
+            },
+            {
+                "object_id": "kaco_lifetime_energy",
+                "name": "Lifetime Energy",
+                "value_template": "{{ (value_json.lifetime_energy_wh / 1000) | round(1) }}",
+                "unit_of_measurement": "kWh",
+                "device_class": "energy",
+                "state_class": "total_increasing",
+            },
+            {
+                "object_id": "kaco_cabinet_temperature",
+                "name": "Cabinet Temperature",
+                "value_template": "{{ value_json.cabinet_temperature_c }}",
+                "unit_of_measurement": "°C",
+                "device_class": "temperature",
+                "state_class": "measurement",
+            },
+            {
+                "object_id": "kaco_operating_state",
+                "name": "Operating State",
+                "value_template": "{{ value_json.operating_state }}",
+                "state_class": "measurement",
+            },
+        ]
+
+        for sensor in sensors:
+            config = {
+                "name": sensor["name"],
+                "unique_id": sensor["object_id"],
+                "state_topic": "kaco/inverter/state",
+                "value_template": sensor["value_template"],
+                "availability_topic": availability["topic"],
+                "payload_available": availability["payload_available"],
+                "payload_not_available": availability["payload_not_available"],
+                "device": device,
+            }
+
+            for key in (
+                "unit_of_measurement",
+                "device_class",
+                "state_class",
+            ):
+                if key in sensor:
+                    config[key] = sensor[key]
+
+            topic = (
+                "homeassistant/sensor/"
+                f"{sensor['object_id']}/config"
+            )
+
+            self.publish(
+                topic,
+                json.dumps(config, separators=(",", ":")),
+                retain=True,
+            )
+
+        status_config = {
+            "name": "Status",
+            "unique_id": "kaco_status",
+            "state_topic": "kaco/inverter/status",
+            "payload_on": "online",
+            "payload_off": "offline",
+            "device_class": "connectivity",
+            "device": device,
+        }
+
+        self.publish(
+            "homeassistant/binary_sensor/kaco_status/config",
+            json.dumps(status_config, separators=(",", ":")),
+            retain=True,
+        )
+
+        logger.info("Published Home Assistant MQTT Discovery configuration")
 
     def publish_inverter_data(
         self,
