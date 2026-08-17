@@ -1,10 +1,10 @@
 import logging
-import os
 import time
 
 from src.config import KacoConfig
 from src.kaco_modbus import KacoModbusClient
 from src.mqtt import MqttClient
+from src.mqtt_config import MqttConfig
 
 
 logging.basicConfig(
@@ -17,20 +17,9 @@ logger = logging.getLogger(__name__)
 
 def main() -> None:
     kaco_config = KacoConfig.from_environment()
+    mqtt_config = MqttConfig.from_environment()
 
-    mqtt_host = os.getenv("MQTT_HOST", "MQTT_HOST")
-    mqtt_port = int(os.getenv("MQTT_PORT", "1883"))
-    mqtt_username = os.getenv("MQTT_USERNAME", "mqtt")
-    mqtt_password = os.getenv("MQTT_PASSWORD")
-
-    if not mqtt_password:
-        raise ValueError(
-            "MQTT_PASSWORD environment variable is required."
-        )
-
-    poll_interval = float(
-        os.getenv("POLL_INTERVAL", "5.0")
-    )
+    poll_interval = 5.0
 
     kaco = KacoModbusClient(
         host=kaco_config.host,
@@ -40,10 +29,10 @@ def main() -> None:
     )
 
     mqtt = MqttClient(
-        host=mqtt_host,
-        port=mqtt_port,
-        username=mqtt_username,
-        password=mqtt_password,
+        host=mqtt_config.host,
+        port=mqtt_config.port,
+        username=mqtt_config.username,
+        password=mqtt_config.password,
     )
 
     try:
