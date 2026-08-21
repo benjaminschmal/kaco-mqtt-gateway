@@ -27,6 +27,8 @@ The gateway reads inverter data via **Modbus TCP / SunSpec** and publishes the a
 - Logging and connection error handling
 - Offline decoder tests with pytest
 - Docker deployment
+- GitHub Actions Docker image build
+- GitHub Container Registry (GHCR) publishing
 
 The implementation has been tested against a real KACO blueplanet 15.0 TL3 M2.
 
@@ -102,7 +104,7 @@ The actual network addresses and credentials are not stored in the repository.
 
 ## Docker
 
-Build the image:
+Build the image locally:
 
 ```bash
 docker build -t kaco-mqtt-gateway:latest .
@@ -126,6 +128,75 @@ POLL_INTERVAL=5
 ```
 
 Do not commit real passwords or other credentials to the repository.
+
+## Docker Image via GitHub Container Registry
+
+The repository automatically builds and publishes the Docker image using **GitHub Actions** whenever changes are pushed to the `main` branch.
+
+The published image is available at:
+
+```text
+ghcr.io/benjaminschmal/kaco-mqtt-gateway:latest
+```
+
+A second image tag containing the Git commit SHA is also published for reproducible deployments.
+
+The workflow is located at:
+
+```text
+.github/workflows/docker-publish.yml
+```
+
+### Using the image on QNAP Container Station
+
+The image can be deployed directly from **QNAP Container Station** without building the Docker image on the QNAP.
+
+In the Container Station **Create Container** dialog, use:
+
+```text
+Registry: ghcr.io
+Image: ghcr.io/benjaminschmal/kaco-mqtt-gateway:latest
+```
+
+Configure the required environment variables in the container settings:
+
+```text
+KACO_HOST
+KACO_PORT
+KACO_UNIT_ID
+KACO_TIMEOUT
+
+MQTT_HOST
+MQTT_PORT
+MQTT_USERNAME
+MQTT_PASSWORD
+
+POLL_INTERVAL
+```
+
+Map the web dashboard port:
+
+```text
+Container port: 8080
+```
+
+This approach keeps the build process separate from the QNAP runtime:
+
+```text
+GitHub repository
+       ↓
+GitHub Actions
+       ↓
+Docker image build
+       ↓
+GitHub Container Registry (GHCR)
+       ↓
+QNAP Container Station
+       ↓
+kaco-mqtt-gateway container
+```
+
+After a new version is pushed to `main`, GitHub Actions creates and publishes a new `latest` image. The QNAP container can then be updated by pulling the latest image and recreating the container with the same configuration.
 
 ## Tests
 
