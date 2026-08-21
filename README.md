@@ -1,6 +1,7 @@
 # KACO MQTT Gateway
 
 [![Tests](https://github.com/benjaminschmal/kaco-mqtt-gateway/actions/workflows/tests.yml/badge.svg)](https://github.com/benjaminschmal/kaco-mqtt-gateway/actions/workflows/tests.yml)
+[![Docker Build](https://github.com/benjaminschmal/kaco-mqtt-gateway/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/benjaminschmal/kaco-mqtt-gateway/actions/workflows/docker-publish.yml)
 
 MQTT gateway for KACO blueplanet photovoltaic inverters.
 
@@ -146,6 +147,8 @@ The workflow is located at:
 ```text
 .github/workflows/docker-publish.yml
 ```
+
+The **Docker Build** badge at the top of this README shows the current status of this workflow. It is green when the latest workflow run succeeded and red when the build or publishing failed.
 
 ### Using the image on QNAP Container Station
 
